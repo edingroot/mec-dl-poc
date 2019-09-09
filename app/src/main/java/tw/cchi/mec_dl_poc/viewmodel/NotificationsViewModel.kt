@@ -1,4 +1,4 @@
-package tw.cchi.mec_dl_poc.ui.notifications
+package tw.cchi.mec_dl_poc.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

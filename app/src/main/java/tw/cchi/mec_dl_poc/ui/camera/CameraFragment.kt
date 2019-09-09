@@ -1,4 +1,4 @@
-package tw.cchi.mec_dl_poc.ui.dashboard
+package tw.cchi.mec_dl_poc.ui.camera
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,21 +9,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import tw.cchi.mec_dl_poc.R
+import tw.cchi.mec_dl_poc.viewmodel.CameraViewModel
 
-class DashboardFragment : Fragment() {
+class CameraFragment : Fragment() {
 
-    private lateinit var dashboardViewModel: DashboardViewModel
+    private lateinit var cameraViewModel: CameraViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        dashboardViewModel =
-            ViewModelProviders.of(this).get(DashboardViewModel::class.java)
+        cameraViewModel =
+            ViewModelProviders.of(this).get(CameraViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_dashboard, container, false)
         val textView: TextView = root.findViewById(R.id.text_dashboard)
-        dashboardViewModel.text.observe(this, Observer {
+        cameraViewModel.text.observe(this, Observer {
             textView.text = it
         })
         return root
