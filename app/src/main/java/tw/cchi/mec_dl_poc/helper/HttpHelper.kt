@@ -1,5 +1,6 @@
 package tw.cchi.mec_dl_poc.helper
 
+import android.util.Log
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -9,6 +10,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class HttpHelper {
+    private val TAG = Constants.TAG + "/HttpHelper"
+
     companion object {
         val JSON = MediaType.parse("application/json; charset=utf-8")
     }
@@ -39,6 +42,8 @@ class HttpHelper {
                 }
 
                 override fun onFailure(call: Call?, e: IOException?) {
+                    e?.printStackTrace()
+                    Log.e(TAG, e?.message.toString())
                     cont.resume(null)
                 }
             })

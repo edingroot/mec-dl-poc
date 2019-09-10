@@ -5,9 +5,9 @@ class Constants {
         const val TAG = "mecpoc"
 
         const val MEC_SERVER_PROTOCOL = "http"
-        const val MEC_SERVER_IP = "127.0.0.1"
-        const val MEC_SERVER_PORT = 8888
+        const val MEC_SERVER_IP = "192.188.2.128"
+        const val MEC_SERVER_PORT = 9999
     }
 }
 
-enum class MecConnStatus { CONNECTING, CONNECTED }
+enum class MecConnStatus { DISCONNECTED, CONNECTING, CONNECTED, FAILED }

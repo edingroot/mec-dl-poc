@@ -1,4 +1,4 @@
-package tw.cchi.mec_dl_poc.viewmodel
+package tw.cchi.mec_dl_poc.ui.camera
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

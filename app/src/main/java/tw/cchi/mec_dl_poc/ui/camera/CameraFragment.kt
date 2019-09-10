@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import tw.cchi.mec_dl_poc.R
-import tw.cchi.mec_dl_poc.viewmodel.CameraViewModel
 
 class CameraFragment : Fragment() {
 

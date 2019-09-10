@@ -27,10 +27,10 @@ class UdpSocketHelper(private val handler: Handler) {
 
     fun initUdpSockets(portRecv: Int?): Int {
         try {
-            if (sendSocket != null)
+            if (sendSocket == null)
                 sendSocket = DatagramSocket()
 
-            if (recvSocket != null)
+            if (recvSocket == null)
                 recvSocket = if (portRecv == null) DatagramSocket() else DatagramSocket(portRecv)
 
             if (receivePacket == null)
