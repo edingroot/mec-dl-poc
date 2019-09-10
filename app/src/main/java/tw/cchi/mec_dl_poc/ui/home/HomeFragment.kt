@@ -8,12 +8,12 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.MecConnStatus
 
 class HomeFragment : Fragment() {
-//    private val application = MyApplication.instance
-//    private val mecHelper = application?.mecHelper
+    private val application = MyApplication.instance
 
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var txtTitle: TextView
@@ -34,12 +34,15 @@ class HomeFragment : Fragment() {
         txtMessages = root.findViewById(R.id.txt_messages)
 
         initViewModelSubscription()
+        application?.initializeMec()
+
 
         return root
     }
 
     private fun initViewModelSubscription() {
         homeViewModel.initialize()
+
         homeViewModel.title.observe(this, Observer { txtTitle.text = it })
 
         homeViewModel.mecConnStatus.observe(this, Observer {

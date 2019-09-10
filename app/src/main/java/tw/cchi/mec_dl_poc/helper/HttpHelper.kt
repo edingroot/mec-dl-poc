@@ -1,6 +1,5 @@
 package tw.cchi.mec_dl_poc.helper
 
-import android.util.Log
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -19,8 +18,10 @@ class HttpHelper {
     private val httpClient = OkHttpClient()
 
     suspend fun initUdpStream(dlUdpPort: Int): Pair<Int, Int>? {
-        return suspendCoroutine { cont ->
-            val url = "%s://%s:%d/upd_streaming/init"
+        var exception: Exception? = null
+
+        val ret = suspendCoroutine<Pair<Int, Int>?> { cont ->
+            val url = "%s://%s:%d/udp_streaming/init"
                 .format(Constants.MEC_SERVER_PROTOCOL, Constants.MEC_SERVER_IP, Constants.MEC_SERVER_PORT)
 
             val reqJson = JSONObject()
@@ -28,6 +29,9 @@ class HttpHelper {
 
             httpPostJson(url, reqJson, object: Callback {
                 override fun onResponse(call: Call?, response: Response) {
+                    if (response.header("content-type") != "application/json")
+                        exception = Exception("Response content type is not application/json")
+
                     val responseData = response.body()?.string()
                     try {
                         val json = JSONObject(responseData)
@@ -37,17 +41,22 @@ class HttpHelper {
                         )
                         cont.resume(responsePair)
                     } catch (e: JSONException) {
-                        e.printStackTrace()
+                        exception = e
+                        cont.resume(null)
                     }
                 }
 
                 override fun onFailure(call: Call?, e: IOException?) {
-                    e?.printStackTrace()
-                    Log.e(TAG, e?.message.toString())
+                    exception = e
                     cont.resume(null)
                 }
             })
         }
+
+        if (exception != null)
+            throw exception as Exception
+        else
+            return ret
     }
 
     private fun httpGet(url: String, callback: Callback): Call {

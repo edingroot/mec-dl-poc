@@ -4,12 +4,10 @@ import UdpSocketHelper
 import android.os.Handler
 import android.os.Message
 import android.util.Log
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.config.MecConnStatus
+import java.io.IOException
 import java.lang.ref.WeakReference
 
 class MecHelper {
@@ -37,7 +35,12 @@ class MecHelper {
 
         onMecResultListener.onConnStatusChange(MecConnStatus.CONNECTING)
 
-        CoroutineScope(bgDispatcher).launch(bgDispatcher) {
+        val handler = CoroutineExceptionHandler { _, e ->
+            onMecResultListener.onConnStatusChange(MecConnStatus.FAILED)
+            onMecResultListener.onStatusMessage(e.message.toString())
+        }
+
+        CoroutineScope(bgDispatcher).launch(handler) {
             val resultPair =  httpHelper.initUdpStream(dlUdpPort)
             Log.i(TAG, "HTTP udp stream init result: $resultPair")
 
@@ -48,6 +51,17 @@ class MecHelper {
                 onMecResultListener.onConnStatusChange(MecConnStatus.FAILED)
             }
         }
+
+//        // Example
+//        runBlocking {
+//            val handler = CoroutineExceptionHandler { _, exception ->
+//                println("Caught $exception with suppressed ${exception.suppressed.contentToString()}")
+//            }
+//            val job = GlobalScope.launch(handler) {
+//                throw IOException()
+//            }
+//            job.join()
+//        }
     }
 
     fun terminateUdpStreaming() {
@@ -66,6 +80,7 @@ class MecHelper {
 
     interface OnMecResultListener {
         fun onConnStatusChange(status: MecConnStatus)
+        fun onStatusMessage(message: String)
         fun onFrameResult(response: String)
     }
 }
