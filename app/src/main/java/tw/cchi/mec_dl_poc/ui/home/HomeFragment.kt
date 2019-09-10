@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -14,10 +15,12 @@ import tw.cchi.mec_dl_poc.config.MecConnStatus
 
 class HomeFragment : Fragment() {
     private val application = MyApplication.instance
+    private val mecHelper = application?.mecHelper
 
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var txtTitle: TextView
     private lateinit var txtMecStatus: TextView
+    private lateinit var btnTest: Button
     private lateinit var txtMessages: TextView
 
     override fun onCreateView(
@@ -31,11 +34,15 @@ class HomeFragment : Fragment() {
         // Find views
         txtTitle = root.findViewById(R.id.txt_title)
         txtMecStatus = root.findViewById(R.id.txt_mec_status)
+        btnTest = root.findViewById(R.id.btn_test)
         txtMessages = root.findViewById(R.id.txt_messages)
 
         initViewModelSubscription()
-        application?.initializeMec()
+        initListeners()
 
+        // Should be called after initViewModelSubscription: homeViewModel.initialize()
+        if (!mecHelper!!.streamingInitialized)
+            application?.initializeMec()
 
         return root
     }
@@ -55,5 +62,13 @@ class HomeFragment : Fragment() {
         })
 
         homeViewModel.messages.observe(this, Observer { txtMessages.text = it })
+    }
+
+    private fun initListeners() {
+        btnTest.setOnClickListener {
+            if (mecHelper != null && mecHelper.streamingInitialized) {
+                mecHelper.sendUdpString("Test Hello Worrrrrld")
+            }
+        }
     }
 }

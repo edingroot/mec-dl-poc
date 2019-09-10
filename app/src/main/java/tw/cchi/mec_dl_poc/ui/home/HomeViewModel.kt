@@ -4,6 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.config.MecConnStatus
@@ -28,7 +31,12 @@ class HomeViewModel : ViewModel() {
         _mecConnStatus.postValue(arg as MecConnStatus)
     }
     private val mecStatusMsgObserver = Observer { _, arg ->
-        _messages.postValue(_messages.value + "\n" + arg)
+        CoroutineScope(Dispatchers.Main).launch {
+            var value = ""
+            if (_messages.value != "")
+                value = _messages.value + "\n"
+            _messages.value = value + arg
+        }
     }
     private val frameResultObserver = Observer { _, arg ->
         Log.i(Constants.TAG, "response from observer=%s".format(arg as String))

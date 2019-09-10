@@ -25,13 +25,13 @@ class UdpSocketHelper(private val handler: Handler) {
         mThreadPool = Executors.newFixedThreadPool(cpuNumbers * 5)
     }
 
-    fun initUdpSockets(portRecv: Int?): Int {
+    fun initUdpSockets(portRecv: Int): Boolean {
         try {
             if (sendSocket == null)
                 sendSocket = DatagramSocket()
 
             if (recvSocket == null)
-                recvSocket = if (portRecv == null) DatagramSocket() else DatagramSocket(portRecv)
+                recvSocket = DatagramSocket(portRecv)
 
             if (receivePacket == null)
                 receivePacket = DatagramPacket(receiveByte, BUFFER_LENGTH)
@@ -39,10 +39,10 @@ class UdpSocketHelper(private val handler: Handler) {
             startSocketThread()
         } catch (e: SocketException) {
             e.printStackTrace()
-            return -1
+            return false
         }
 
-        return sendSocket!!.port
+        return true
     }
 
     private fun startSocketThread() {
@@ -106,10 +106,11 @@ class UdpSocketHelper(private val handler: Handler) {
                 mThreadPool?.execute {
                     val strReceive =
                         String(receivePacket!!.data, receivePacket!!.offset, receivePacket!!.length)
-                    Log.d(
+
+                    /* Log.d(
                         TAG,
                         strReceive + " from " + receivePacket!!.address.hostAddress + ":" + receivePacket!!.port
-                    )
+                    ) */
 
                     handler.sendMessage(handler.obtainMessage(1, strReceive))
                     receivePacket?.length = BUFFER_LENGTH

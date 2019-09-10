@@ -29,18 +29,16 @@ class MyApplication : Application() {
     }
 
     fun initializeMec() {
-        mecHelper.initUdpStreaming(null, object : MecHelper.OnMecResultListener {
+        mecHelper.initUdpStreaming(Constants.LOCAL_UDP_PORT, object : MecHelper.OnMecResultListener {
             override fun onConnStatusChange(status: MecConnStatus) {
                 mecConnStatusObservable.notifyObservers(status)
             }
 
             override fun onStatusMessage(message: String) {
-                Log.i(Constants.TAG, "mecStatusMsgObservable.notifyObservers");
                 mecStatusMsgObservable.notifyObservers(message)
             }
 
             override fun onFrameResult(response: String) {
-                Log.i(Constants.TAG, "onFrameResult, response=$response")
                 frameResultObservable.notifyObservers(response)
             }
         })
