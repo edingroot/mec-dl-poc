@@ -3,24 +3,38 @@ package tw.cchi.mec_dl_poc.helper
 import UdpSocketHelper
 import android.os.Handler
 import android.os.Message
-import okhttp3.OkHttpClient
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 class MecHelper {
-    private var streamingInitialized = false
+    var streamingInitialized = false
+        private set
     private var udpServerPort = 0
     private var onFrameResultListener: OnFrameResultListener? = null
+
+    // Dispatches execution into Android main thread
+    private val uiDispatcher: CoroutineDispatcher = Dispatchers.Main
+    // A pool of shared threads as coroutine dispatcher
+    private val bgDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     private val httpHelper = HttpHelper()
     private val packetRecvHandler = PacketRecvHandler(WeakReference(this))
     private val udpSocketHelper = UdpSocketHelper(packetRecvHandler)
 
-    fun initUdpStreaming(udpServerPort: Int, onFrameResultListener: OnFrameResultListener) {
-        this.udpServerPort = udpServerPort
+    fun initUdpStreaming(udpServerPort: Int?, onFrameResultListener: OnFrameResultListener) {
         this.onFrameResultListener = onFrameResultListener
 
-        this.udpSocketHelper.initUdpSockets(udpServerPort)
-        this.streamingInitialized = true
+        this.udpServerPort = udpSocketHelper.initUdpSockets(udpServerPort)
+        val dlUdpPort = this.udpServerPort
+
+        CoroutineScope(bgDispatcher).launch(bgDispatcher) {
+            val resultPair =  httpHelper.initUdpStream(dlUdpPort)
+            // TODO
+            streamingInitialized = true
+        }
     }
 
     fun terminateUdpStreaming() {

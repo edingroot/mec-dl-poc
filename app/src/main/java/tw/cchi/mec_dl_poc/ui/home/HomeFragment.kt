@@ -1,6 +1,7 @@
 package tw.cchi.mec_dl_poc.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +11,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.R
+import tw.cchi.mec_dl_poc.config.Constants
+import tw.cchi.mec_dl_poc.config.MecConnStatus
 import tw.cchi.mec_dl_poc.viewmodel.MecViewModel
+import java.util.*
 
 class HomeFragment : Fragment() {
     private val application = MyApplication.instance
     private val mecHelper = application?.mecHelper
+    private lateinit var frameResultObserver: java.util.Observer
 
     private lateinit var mecViewModel: MecViewModel
     private lateinit var txtTitle: TextView
@@ -28,11 +33,22 @@ class HomeFragment : Fragment() {
             ViewModelProviders.of(this).get(MecViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
+        // Find views
         txtTitle = root.findViewById(R.id.txt_title)
         txtMecStatus = root.findViewById(R.id.txt_mec_status)
 
+        // Set up view model observers
         mecViewModel.title.observe(this, Observer { txtTitle.text = it })
-        mecViewModel.mecStatus.observe(this, Observer { txtMecStatus.text = it })
+        mecViewModel.mecConnStatus.observe(this, Observer {
+            when (it) {
+                MecConnStatus.CONNECTING -> txtMecStatus.text = "Connecting to MEC server"
+                MecConnStatus.CONNECTED -> txtMecStatus.text = "MEC server connected"
+            }
+        })
+
+        frameResultObserver = Observer { obs, arg ->
+            Log.i(Constants.TAG, "response from observer=%s".format(arg as String))
+        }
 
         return root
     }
@@ -40,10 +56,11 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        mecViewModel.setMecStatus("Connecting to MEC server...")
+        application!!.frameResultObservable.addObserver(frameResultObserver)
     }
 
-    fun connectMec() {
-
+    override fun onPause() {
+        super.onPause()
+        application!!.frameResultObservable.deleteObserver(frameResultObserver)
     }
 }
