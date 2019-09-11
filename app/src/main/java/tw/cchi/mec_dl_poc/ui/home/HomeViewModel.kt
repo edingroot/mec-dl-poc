@@ -14,6 +14,7 @@ import java.util.*
 
 class HomeViewModel : ViewModel() {
     private val application = MyApplication.instance
+    private val mecHelper = application?.mecHelper
 
     // MutableLiveData
     private val _title = MutableLiveData<String>().apply { value = "MEC Connection Status" }
@@ -46,6 +47,10 @@ class HomeViewModel : ViewModel() {
         application?.mecConnStatusObservable?.addObserver(mecConnStatusObserver)
         application?.mecStatusMsgObservable?.addObserver(mecStatusMsgObserver)
         application?.frameResultObservable?.addObserver(frameResultObserver)
+
+        // Fill initial values
+        _mecConnStatus.value = mecHelper?.connectStatus
+        _messages.value = mecHelper?.statusMessage
     }
 
     override fun onCleared() {

@@ -4,16 +4,27 @@ import UdpSocketHelper
 import android.os.Handler
 import android.os.Message
 import android.util.Log
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.config.MecConnStatus
 import java.lang.ref.WeakReference
+import kotlin.properties.Delegates.observable
 
 class MecHelper {
     private val TAG = Constants.TAG + "/MecHelper"
 
     var streamingInitialized = false
         private set
+    var connectStatus: MecConnStatus by observable(MecConnStatus.DISCONNECTED) { _, _, newValue ->
+        onMecResultListener?.onConnStatusChange(newValue)
+    }
+        private set
+    var statusMessage = ""
+        private set
+
     private var udpServerPort = 0
     private var remoteUdpPort = 0
     private var remoteUdpTimeout = 0
@@ -27,21 +38,21 @@ class MecHelper {
         this.onMecResultListener = onMecResultListener
         this.udpServerPort = udpServerPort
 
-        onMecResultListener.onConnStatusChange(MecConnStatus.CONNECTING)
+        connectStatus = MecConnStatus.CONNECTING
 
         if (!udpSocketHelper.initUdpSockets(udpServerPort)) {
-            onMecResultListener.onConnStatusChange(MecConnStatus.FAILED)
+            connectStatus = MecConnStatus.FAILED
             onMecResultListener.onStatusMessage("Failed to open udp sockets")
             return
         }
 
         val handler = CoroutineExceptionHandler { _, e ->
-            onMecResultListener.onConnStatusChange(MecConnStatus.FAILED)
+            connectStatus = MecConnStatus.FAILED
             onMecResultListener.onStatusMessage(e.message.toString())
         }
 
         CoroutineScope(Dispatchers.IO).launch(handler) {
-            val resultPair =  httpHelper.initUdpStream(udpServerPort)
+            val resultPair = httpHelper.initUdpStream(udpServerPort)
             Log.i(TAG, "HTTP udp stream init result: $resultPair")
 
             if (resultPair != null) {
@@ -49,11 +60,12 @@ class MecHelper {
                 remoteUdpTimeout = resultPair.second
                 streamingInitialized = true
 
-                onMecResultListener.onConnStatusChange(MecConnStatus.CONNECTED)
-                onMecResultListener.onStatusMessage("Remote UDP Port: $remoteUdpPort")
-                onMecResultListener.onStatusMessage("Remote UDP Timeout: $remoteUdpTimeout")
+                connectStatus = MecConnStatus.CONNECTED
+                statusMessage += "Remote UDP Port: $remoteUdpPort\n"
+                statusMessage += "Remote UDP Timeout: $remoteUdpTimeout"
+                onMecResultListener.onStatusMessage(statusMessage)
             } else {
-                onMecResultListener.onConnStatusChange(MecConnStatus.FAILED)
+                connectStatus = MecConnStatus.FAILED
             }
         }
 
@@ -72,8 +84,9 @@ class MecHelper {
     fun terminateUdpStreaming() {
         // TODO: send disconnect message to server
 
-        onMecResultListener?.onConnStatusChange(MecConnStatus.DISCONNECTED)
         streamingInitialized = false
+        connectStatus = MecConnStatus.DISCONNECTED
+        statusMessage = ""
         udpServerPort = 0
         remoteUdpPort = 0
         remoteUdpTimeout = 0
