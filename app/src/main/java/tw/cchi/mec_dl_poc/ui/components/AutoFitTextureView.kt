@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tw.cchi.mec_dl_poc.ui.camera
+package tw.cchi.mec_dl_poc.ui.components
 
 import android.content.Context
 import android.util.AttributeSet

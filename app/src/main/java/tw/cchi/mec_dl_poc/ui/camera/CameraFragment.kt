@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.Constants
+import tw.cchi.mec_dl_poc.ui.components.AutoFitTextureView
 import tw.cchi.mec_dl_poc.util.showToast
 import java.io.File
 import java.util.*
