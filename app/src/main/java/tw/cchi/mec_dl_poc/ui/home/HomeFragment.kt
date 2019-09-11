@@ -20,8 +20,9 @@ class HomeFragment : Fragment() {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var txtTitle: TextView
     private lateinit var txtMecStatus: TextView
-    private lateinit var btnTest: Button
+    private lateinit var btnRetry: Button
     private lateinit var txtMessages: TextView
+    private lateinit var btnTest: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,15 +35,16 @@ class HomeFragment : Fragment() {
         // Find views
         txtTitle = root.findViewById(R.id.txt_title)
         txtMecStatus = root.findViewById(R.id.txt_mec_status)
-        btnTest = root.findViewById(R.id.btn_test)
+        btnRetry = root.findViewById(R.id.btn_retry)
         txtMessages = root.findViewById(R.id.txt_messages)
+        btnTest = root.findViewById(R.id.btn_test)
 
         initViewModelSubscription()
         initListeners()
 
         // Should be called after initViewModelSubscription: homeViewModel.initialize()
         if (!mecHelper!!.streamingInitialized)
-            application?.initializeMec()
+            application?.connectMecServer()
 
         return root
     }
@@ -54,10 +56,22 @@ class HomeFragment : Fragment() {
 
         homeViewModel.mecConnStatus.observe(this, Observer {
             when (it) {
-                MecConnStatus.DISCONNECTED -> txtMecStatus.text = "MEC server disconnected"
-                MecConnStatus.CONNECTING -> txtMecStatus.text = "Connecting to MEC server"
-                MecConnStatus.CONNECTED -> txtMecStatus.text = "MEC server connected"
-                MecConnStatus.FAILED -> txtMecStatus.text = "Failed to connect MEC server"
+                MecConnStatus.DISCONNECTED -> {
+                    txtMecStatus.text = "MEC server disconnected"
+                    btnRetry.visibility = View.VISIBLE
+                }
+                MecConnStatus.CONNECTING -> {
+                    txtMecStatus.text = "Connecting to MEC server"
+                    btnRetry.visibility = View.GONE
+                }
+                MecConnStatus.CONNECTED -> {
+                    txtMecStatus.text = "MEC server connected"
+                    btnRetry.visibility = View.GONE
+                }
+                MecConnStatus.FAILED -> {
+                    txtMecStatus.text = "Failed to connect to MEC server"
+                    btnRetry.visibility = View.VISIBLE
+                }
             }
         })
 
@@ -65,6 +79,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun initListeners() {
+        btnRetry.setOnClickListener {
+            if (!mecHelper!!.streamingInitialized)
+                application?.connectMecServer()
+        }
+
         btnTest.setOnClickListener {
             if (mecHelper != null && mecHelper.streamingInitialized) {
                 mecHelper.sendUdpString("Test Hello Worrrrrld")

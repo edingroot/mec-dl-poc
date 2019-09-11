@@ -27,7 +27,7 @@ class MyApplication : Application() {
         instance = this
     }
 
-    fun initializeMec() {
+    fun connectMecServer() {
         mecHelper.initUdpStreaming(Constants.LOCAL_UDP_PORT, object : MecHelper.OnMecResultListener {
             override fun onConnStatusChange(status: MecConnStatus) {
                 mecConnStatusObservable.notifyObservers(status)
