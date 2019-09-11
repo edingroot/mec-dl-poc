@@ -17,8 +17,8 @@ class FrameProcessor {
             val frame =
                 Bitmap.createBitmap(textureView.width, textureView.height, Bitmap.Config.ARGB_8888)
 
-            val bitmap = textureView.getBitmap(frame)
-            Bitmap.createScaledBitmap(
+            var bitmap = textureView.getBitmap(frame)
+            bitmap = Bitmap.createScaledBitmap(
                 bitmap,
                 (bitmap.width * scaleRatio).toInt(),
                 (bitmap.height * scaleRatio).toInt(),

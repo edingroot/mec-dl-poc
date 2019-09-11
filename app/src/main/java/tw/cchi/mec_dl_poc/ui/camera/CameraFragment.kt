@@ -53,8 +53,10 @@ class CameraFragment : Fragment(), View.OnClickListener,
                 val jpegByteArray =
                     FrameProcessor.getJpegByteArray(textureView, 0.5, 60)
 
-                FrameProcessor.saveJpegByteArray(jpegByteArray, file)
-                Log.i(TAG, "Frame saved: $file")
+                // TODO: send to the server
+
+                // FrameProcessor.saveJpegByteArray(jpegByteArray, file)
+                // Log.i(TAG, "Frame saved: $file")
             }
         }
     }

@@ -7,11 +7,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class UdpSocketHelper(private val handler: Handler) {
-    private val TAG = Constants.TAG + "/UdpSocketHelper"
-    private val BUFFER_LENGTH = 10240
+    companion object {
+        private const val TAG = Constants.TAG + "/UdpSocketHelper"
+        private const val BUFFER_LENGTH = 10240
+    }
 
     private var mThreadPool: ExecutorService? = null
-
     private var sendSocket: DatagramSocket? = null
     private var recvSocket: DatagramSocket? = null
     private var receivePacket: DatagramPacket? = null
