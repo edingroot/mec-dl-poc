@@ -15,7 +15,7 @@
         android:id="@+id/navigation_camera"
         android:name="tw.cchi.mec_dl_poc.ui.camera.CameraFragment"
         android:label="@string/title_camera"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_camera" />
 
     <fragment
         android:id="@+id/navigation_notifications"

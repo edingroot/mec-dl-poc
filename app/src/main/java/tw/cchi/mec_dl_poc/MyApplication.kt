@@ -1,11 +1,10 @@
 package tw.cchi.mec_dl_poc
 
 import android.app.Application
-import android.util.Log
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.config.MecConnStatus
 import tw.cchi.mec_dl_poc.helper.MecHelper
-import tw.cchi.mec_dl_poc.helper.Observable
+import tw.cchi.mec_dl_poc.util.Observable
 
 class MyApplication : Application() {
     companion object {
