@@ -20,7 +20,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.Constants
+import tw.cchi.mec_dl_poc.helper.FrameProcessor
 import tw.cchi.mec_dl_poc.ui.components.AutoFitTextureView
+import tw.cchi.mec_dl_poc.util.ImageSaverRunnable
 import tw.cchi.mec_dl_poc.util.showToast
 import java.io.File
 import java.util.*
@@ -36,7 +38,6 @@ class CameraFragment : Fragment(), View.OnClickListener,
      * [TextureView].
      */
     private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             openCamera(width, height)
         }
@@ -47,8 +48,15 @@ class CameraFragment : Fragment(), View.OnClickListener,
 
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
-        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
+            backgroundHandler?.post {
+                val jpegByteArray =
+                    FrameProcessor.getJpegByteArray(textureView, 0.5, 60)
 
+                FrameProcessor.saveJpegByteArray(jpegByteArray, file)
+                Log.i(TAG, "Frame saved: $file")
+            }
+        }
     }
 
     /**
@@ -125,7 +133,7 @@ class CameraFragment : Fragment(), View.OnClickListener,
      * still image is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), file))
+        backgroundHandler?.post(ImageSaverRunnable(it.acquireNextImage(), file))
     }
 
     /**
@@ -657,7 +665,7 @@ class CameraFragment : Fragment(), View.OnClickListener,
                     result: TotalCaptureResult
                 ) {
                     activity!!.showToast("Saved: $file")
-                    Log.d(TAG, file.toString())
+                    Log.i(TAG, "Saved: $file")
                     unlockFocus()
                 }
             }
