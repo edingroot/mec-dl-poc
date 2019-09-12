@@ -110,7 +110,8 @@ class MecHelper(private val prefHelper: PreferenceHelper) {
         }
 
         // Send the first packet for specifying total data length
-        val dataLengthBytes = PacketProcessor.getDataLengthIn4Bytes(chunk.size)
+        Log.i(TAG, "byteArray.size=" + byteArray.size)
+        val dataLengthBytes = PacketProcessor.getDataLengthIn4Bytes(byteArray.size)
         udpSocketHelper.sendPacket(prefHelper.mecServerHost, remoteUdpPort, dataLengthBytes, 4)
 
         // Send the remaining packets which contains data

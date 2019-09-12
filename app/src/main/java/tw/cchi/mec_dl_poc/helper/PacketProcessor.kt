@@ -3,15 +3,21 @@ package tw.cchi.mec_dl_poc.helper
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.util.and
 import tw.cchi.mec_dl_poc.util.shl
+import kotlin.math.ceil
 
 class PacketProcessor {
 
     companion object {
         fun fragmentPacket(byteArray: ByteArray): Array<ByteArray> {
-            // val packCount = ceil(byteArray.size.toDouble() / Constants.CHUNK_PACK_SIZE).toInt()
-            // var chunk = Array(packCount) { ByteArray(Constants.CHUNK_PACK_SIZE) }
-            return byteArray.groupBy { it / Constants.CHUNK_PACK_SIZE }
-                             .map { it.value.toByteArray() }.toTypedArray()
+            val packCount = ceil(byteArray.size.toDouble() / Constants.CHUNK_PACK_SIZE).toInt()
+            val chunk = Array(packCount) { ByteArray(Constants.CHUNK_PACK_SIZE) }
+
+            for (i in 0 until packCount - 1) {
+                val range = i * Constants.CHUNK_PACK_SIZE until (i + 1) * Constants.CHUNK_PACK_SIZE
+                chunk[i] = byteArray.slice(range).toByteArray()
+            }
+
+            return chunk
         }
 
         fun assemblePacket(dataLength: Int, packetArray: Array<ByteArray>): ByteArray? {

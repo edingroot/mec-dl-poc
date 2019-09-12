@@ -12,7 +12,7 @@ class UdpSocketHelper(private val handler: Handler) {
         private const val BUFFER_LENGTH = 10240
     }
 
-    private var mThreadPool: ExecutorService? = null
+    // private var mThreadPool: ExecutorService? = null
     private var sendSocket: DatagramSocket? = null
     private var recvSocket: DatagramSocket? = null
     private var receivePacket: DatagramPacket? = null
@@ -22,8 +22,8 @@ class UdpSocketHelper(private val handler: Handler) {
     private lateinit var clientThread: Thread
 
     init {
-        val cpuNumbers = Runtime.getRuntime().availableProcessors()
-        mThreadPool = Executors.newFixedThreadPool(cpuNumbers * 5)
+        // val cpuNumbers = Runtime.getRuntime().availableProcessors()
+        // mThreadPool = Executors.newFixedThreadPool(cpuNumbers * 5)
     }
 
     fun initUdpSockets(portRecv: Int): Boolean {
@@ -80,7 +80,7 @@ class UdpSocketHelper(private val handler: Handler) {
     fun sendPacket(remoteHost: String, remotePort: Int, byteArray: ByteArray, length: Int): Boolean {
         if (sendSocket == null) return false
 
-        mThreadPool?.execute {
+        // mThreadPool?.execute {
             try {
                 val packet = DatagramPacket(
                     byteArray,
@@ -94,7 +94,7 @@ class UdpSocketHelper(private val handler: Handler) {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-        }
+        // }
 
         return true
     }
@@ -108,7 +108,7 @@ class UdpSocketHelper(private val handler: Handler) {
                     continue
 
                 // Multi thread to handle multi packets
-                mThreadPool?.execute {
+                // mThreadPool?.execute {
                     val strReceive =
                         String(receivePacket!!.data, receivePacket!!.offset, receivePacket!!.length)
 
@@ -119,7 +119,7 @@ class UdpSocketHelper(private val handler: Handler) {
 
                     handler.sendMessage(handler.obtainMessage(1, strReceive))
                     receivePacket?.length = BUFFER_LENGTH
-                }
+                // }
             } catch (e: IOException) {
                 terminateUdpSockets()
                 e.printStackTrace()

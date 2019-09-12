@@ -61,8 +61,8 @@ class CameraFragment : Fragment(), View.OnClickListener,
                 if (mecHelper != null && mecHelper.streamingInitialized)
                     mecHelper.sendUdpChunk(jpegByteArray)
 
-                // FrameProcessor.saveJpegByteArray(jpegByteArray, file)
-                // Log.i(TAG, "Frame saved: $file")
+                FrameProcessor.saveJpegByteArray(jpegByteArray, file)
+                Log.i(TAG, "Frame saved: $file")
             }
         }
     }

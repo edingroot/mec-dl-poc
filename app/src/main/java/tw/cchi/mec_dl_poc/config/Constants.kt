@@ -10,8 +10,8 @@ class Constants {
         const val LOCAL_UDP_PORT = 6666
 
         // UDP video streaming
-        const val CHUNK_PACK_SIZE = 1024
-        const val CHUNK_MAX_PACK = 100
+        const val CHUNK_PACK_SIZE = 6000
+        const val CHUNK_MAX_PACK = 500
         const val PIC_FILE_NAME = "pic.jpg"
 
         const val REQUEST_CAMERA_PERMISSION = 1
