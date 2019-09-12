@@ -15,9 +15,13 @@ import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.*
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.Constants
@@ -37,6 +41,9 @@ class CameraFragment : Fragment(), View.OnClickListener,
     private val application = MyApplication.instance
     private val mecHelper = application?.mecHelper
 
+    private var fpsCounter = 0
+    private var fpsCounterTimestamp = System.currentTimeMillis()
+
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -53,7 +60,7 @@ class CameraFragment : Fragment(), View.OnClickListener,
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
-            backgroundHandler?.post {
+            CoroutineScope(Dispatchers.IO).launch {
                 val jpegByteArray =
                     FrameProcessor.getJpegByteArray(textureView, 0.5, 60)
 
@@ -61,9 +68,20 @@ class CameraFragment : Fragment(), View.OnClickListener,
                 if (mecHelper != null && mecHelper.streamingInitialized)
                     mecHelper.sendUdpChunk(jpegByteArray)
 
-                FrameProcessor.saveJpegByteArray(jpegByteArray, file)
-                Log.i(TAG, "Frame saved: $file")
+                // FrameProcessor.saveJpegByteArray(jpegByteArray, file)
+                // Log.i(TAG, "Frame saved: $file")
             }
+
+            if (fpsCounter++ >= 10) {
+                val fps = (System.currentTimeMillis() - fpsCounterTimestamp) / 10.0
+                Log.i(TAG, "UDP streaming FPS: %.1f".format(fps))
+
+                fpsCounter = 0
+                fpsCounterTimestamp = System.currentTimeMillis()
+            }
+
+            /* backgroundHandler?.post {
+            } */
         }
     }
 
@@ -252,6 +270,10 @@ class CameraFragment : Fragment(), View.OnClickListener,
         view.findViewById<View>(R.id.picture).setOnClickListener(this)
         view.findViewById<View>(R.id.info).setOnClickListener(this)
         textureView = view.findViewById(R.id.texture)
+
+        if (mecHelper == null || !mecHelper.streamingInitialized) {
+            Toast.makeText(context, "UDP streaming not initialized", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
