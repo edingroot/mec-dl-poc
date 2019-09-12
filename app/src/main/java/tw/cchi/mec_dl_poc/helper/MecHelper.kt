@@ -96,7 +96,55 @@ class MecHelper(private val prefHelper: PreferenceHelper) {
         udpSocketHelper.sendPacket(prefHelper.mecServerHost, remoteUdpPort, message)
     }
 
-    fun sendUdpChunk(byteArray: ByteArray): Boolean {
+    fun sendUdpChunk(bytes: ByteArray): Boolean {
+        if (!streamingInitialized) {
+            Log.e(TAG, "sendUdpChunk: streaming not initialized")
+            return false
+        }
+
+        val result = PacketProcessor.fragmentPacketByOffset(bytes)
+        val packCount = result.first
+        val lastPACK = result.second
+
+        if (packCount > Constants.CHUNK_MAX_PACK) {
+            Log.e(
+                TAG, "Chunk pack size %d should not greater than CHUNK_MAX_PACK: %d"
+                    .format(packCount, Constants.CHUNK_MAX_PACK)
+            )
+            return false
+        }
+
+        Log.i(TAG, "bytes.size=%d, PACK count=%d".format(bytes.size, packCount))
+
+        // Send the first packet for specifying total data length
+        val dataLengthBytes = PacketProcessor.getDataLengthIn4Bytes(bytes.size)
+        udpSocketHelper.sendPacket(prefHelper.mecServerHost, remoteUdpPort, dataLengthBytes, 4)
+
+        // Send the remaining packets which contains data (chunk PACK)
+        for (i in 0 until packCount - 1) {
+            udpSocketHelper.sendPacket(
+                prefHelper.mecServerHost,
+                remoteUdpPort,
+                bytes,
+                i * Constants.CHUNK_PACK_SIZE,
+                Constants.CHUNK_PACK_SIZE
+            )
+        }
+
+        // Send last PACK
+        udpSocketHelper.sendPacket(
+            prefHelper.mecServerHost,
+            remoteUdpPort,
+            lastPACK,
+            0,
+            Constants.CHUNK_PACK_SIZE
+        )
+
+        return true
+    }
+
+    // Fragment and send packet without using offset (slower)
+    /* fun sendUdpChunk(byteArray: ByteArray): Boolean {
         if (!streamingInitialized) {
             Log.e(TAG, "sendUdpChunk: streaming not initialized")
             return false
@@ -122,7 +170,7 @@ class MecHelper(private val prefHelper: PreferenceHelper) {
         }
 
         return true
-    }
+    } */
 
     class PacketRecvHandler(private val outerClass: WeakReference<MecHelper>) : Handler() {
         override fun handleMessage(msg: Message?) {
