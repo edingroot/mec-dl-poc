@@ -33,14 +33,14 @@ class HomeFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
         // Find views
-        txtTitle = root.findViewById(R.id.txt_title)
-        txtMecStatus = root.findViewById(R.id.txt_mec_status)
-        btnRetry = root.findViewById(R.id.btn_retry)
-        txtMessages = root.findViewById(R.id.txt_messages)
-        btnTest = root.findViewById(R.id.btn_test)
+        txtTitle = root.findViewById(R.id.txtTitle)
+        txtMecStatus = root.findViewById(R.id.txtMecStatus)
+        btnRetry = root.findViewById(R.id.btnRetry)
+        txtMessages = root.findViewById(R.id.txtMessages)
+        btnTest = root.findViewById(R.id.btnTest)
 
         initViewModelSubscription()
-        initListeners()
+        registerListeners()
 
         // Should be called after initViewModelSubscription: homeViewModel.initialize()
         if (!mecHelper!!.streamingInitialized)
@@ -78,7 +78,7 @@ class HomeFragment : Fragment() {
         homeViewModel.messages.observe(this, Observer { txtMessages.text = it })
     }
 
-    private fun initListeners() {
+    private fun registerListeners() {
         btnRetry.setOnClickListener {
             if (!mecHelper!!.streamingInitialized)
                 application?.connectMecServer()

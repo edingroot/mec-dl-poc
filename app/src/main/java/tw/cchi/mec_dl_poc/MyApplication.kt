@@ -4,6 +4,7 @@ import android.app.Application
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.config.MecConnStatus
 import tw.cchi.mec_dl_poc.helper.MecHelper
+import tw.cchi.mec_dl_poc.helper.PreferenceHelper
 import tw.cchi.mec_dl_poc.util.Observable
 
 class MyApplication : Application() {
@@ -17,7 +18,8 @@ class MyApplication : Application() {
         } */
     }
 
-    var mecHelper = MecHelper()
+    lateinit var prefHelper: PreferenceHelper
+    lateinit var mecHelper: MecHelper
     var mecConnStatusObservable = Observable()
     var mecStatusMsgObservable = Observable()
     var frameResultObservable = Observable()
@@ -25,6 +27,8 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        prefHelper = PreferenceHelper(this)
+        mecHelper = MecHelper(prefHelper)
     }
 
     fun connectMecServer() {
@@ -41,6 +45,11 @@ class MyApplication : Application() {
                 frameResultObservable.notifyObservers(response)
             }
         })
+    }
+
+    fun reconnectMecServer() {
+        mecHelper.terminateUdpStreaming()
+        connectMecServer()
     }
 
     override fun onTerminate() {

@@ -13,7 +13,7 @@ import tw.cchi.mec_dl_poc.config.MecConnStatus
 import java.lang.ref.WeakReference
 import kotlin.properties.Delegates.observable
 
-class MecHelper {
+class MecHelper(private val prefHelper: PreferenceHelper) {
     private val TAG = Constants.TAG + "/MecHelper"
 
     var streamingInitialized = false
@@ -30,7 +30,7 @@ class MecHelper {
     private var remoteUdpTimeout = 0
     private var onMecResultListener: OnMecResultListener? = null
 
-    private val httpHelper = HttpHelper()
+    private val httpHelper = HttpHelper(prefHelper)
     private val packetRecvHandler = PacketRecvHandler(WeakReference(this))
     private val udpSocketHelper = UdpSocketHelper(packetRecvHandler)
 
@@ -69,16 +69,16 @@ class MecHelper {
             }
         }
 
-//        // Example
-//        runBlocking {
-//            val handler = CoroutineExceptionHandler { _, exception ->
-//                println("Caught $exception with suppressed ${exception.suppressed.contentToString()}")
-//            }
-//            val job = GlobalScope.launch(handler) {
-//                throw IOException()
-//            }
-//            job.join()
-//        }
+        // Example
+        /* runBlocking {
+            val handler = CoroutineExceptionHandler { _, exception ->
+                println("Caught $exception with suppressed ${exception.suppressed.contentToString()}")
+            }
+            val job = GlobalScope.launch(handler) {
+                throw IOException()
+            }
+            job.join()
+        } */
     }
 
     fun terminateUdpStreaming() {
@@ -93,7 +93,7 @@ class MecHelper {
     }
 
     fun sendUdpString(message: String) {
-        udpSocketHelper.sendPacket(Constants.MEC_SERVER_IP, remoteUdpPort, message)
+        udpSocketHelper.sendPacket(prefHelper.mecServerHost, remoteUdpPort, message)
     }
 
     fun sendUdpChunk(byteArray: ByteArray): Boolean {
@@ -111,12 +111,12 @@ class MecHelper {
 
         // Send the first packet for specifying total data length
         val dataLengthBytes = PacketProcessor.getDataLengthIn4Bytes(chunk.size)
-        udpSocketHelper.sendPacket(Constants.MEC_SERVER_IP, remoteUdpPort, dataLengthBytes, 4)
+        udpSocketHelper.sendPacket(prefHelper.mecServerHost, remoteUdpPort, dataLengthBytes, 4)
 
         // Send the remaining packets which contains data
         for (fragment in chunk) {
             udpSocketHelper.sendPacket(
-                Constants.MEC_SERVER_IP, remoteUdpPort, fragment, Constants.CHUNK_PACK_SIZE)
+                prefHelper.mecServerHost, remoteUdpPort, fragment, Constants.CHUNK_PACK_SIZE)
         }
 
         return true

@@ -5,8 +5,8 @@ class Constants {
         const val TAG = "mecpoc"
 
         const val MEC_SERVER_PROTOCOL = "http"
-        const val MEC_SERVER_IP = "192.188.2.116"
-        const val MEC_SERVER_PORT = 9999
+        const val DEFAULT_MEC_SERVER_HOST = "192.188.2.116"
+        const val DEFAULT_MEC_SERVER_PORT = 9999
         const val LOCAL_UDP_PORT = 6666
 
         // UDP video streaming

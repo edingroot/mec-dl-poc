@@ -8,7 +8,7 @@ import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class HttpHelper {
+class HttpHelper(private val prefHelper: PreferenceHelper) {
     private val TAG = Constants.TAG + "/HttpHelper"
 
     companion object {
@@ -22,7 +22,7 @@ class HttpHelper {
 
         val ret = suspendCoroutine<Pair<Int, Int>?> { cont ->
             val url = "%s://%s:%d/udp_streaming/init"
-                .format(Constants.MEC_SERVER_PROTOCOL, Constants.MEC_SERVER_IP, Constants.MEC_SERVER_PORT)
+                .format(Constants.MEC_SERVER_PROTOCOL, prefHelper.mecServerHost, prefHelper.mecServerPort)
 
             val reqJson = JSONObject()
             reqJson.put("dl_udp_port", dlUdpPort)
