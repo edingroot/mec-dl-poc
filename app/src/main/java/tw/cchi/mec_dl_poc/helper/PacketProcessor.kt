@@ -8,18 +8,27 @@ import kotlin.math.ceil
 class PacketProcessor {
 
     companion object {
-        fun fragmentPacket(byteArray: ByteArray): Array<ByteArray> {
-            val packCount = ceil(byteArray.size.toDouble() / Constants.CHUNK_PACK_SIZE).toInt()
+        fun fragmentPacket(bytes: ByteArray): Array<ByteArray> {
+            val packCount = ceil(bytes.size.toDouble() / Constants.CHUNK_PACK_SIZE).toInt()
             val chunk = Array(packCount) { ByteArray(Constants.CHUNK_PACK_SIZE) }
 
             for (i in 0 until packCount - 1) {
-                val range = i * Constants.CHUNK_PACK_SIZE until (i + 1) * Constants.CHUNK_PACK_SIZE
-                chunk[i] = byteArray.slice(range).toByteArray()
+                chunk[i] = bytes.copyOfRange(
+                    i * Constants.CHUNK_PACK_SIZE,
+                    ((i + 1) * Constants.CHUNK_PACK_SIZE)
+                )
+            }
+
+            // Last PACK
+            val offset = (packCount - 1) * Constants.CHUNK_PACK_SIZE
+            for (i in 0 until bytes.size - offset) {
+                chunk[packCount - 1][i] = bytes[offset + i]
             }
 
             return chunk
         }
 
+        // Not tested
         fun assemblePacket(dataLength: Int, packetArray: Array<ByteArray>): ByteArray? {
             if (packetArray.size * Constants.CHUNK_PACK_SIZE < dataLength)
                 return null
