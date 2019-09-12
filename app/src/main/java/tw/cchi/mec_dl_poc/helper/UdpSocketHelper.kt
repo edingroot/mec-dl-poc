@@ -73,14 +73,18 @@ class UdpSocketHelper(private val handler: Handler) {
         }
     }
 
-    fun sendMessage(remoteHost: String, remotePort: Int, message: String): Boolean {
+    fun sendPacket(remoteHost: String, remotePort: Int, message: String): Boolean {
+        return sendPacket(remoteHost, remotePort, message.toByteArray(), message.length)
+    }
+
+    fun sendPacket(remoteHost: String, remotePort: Int, byteArray: ByteArray, length: Int): Boolean {
         if (sendSocket == null) return false
 
         mThreadPool?.execute {
             try {
                 val packet = DatagramPacket(
-                    message.toByteArray(),
-                    message.length,
+                    byteArray,
+                    length,
                     InetAddress.getByName(remoteHost),
                     remotePort
                 )

@@ -18,6 +18,7 @@ import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.helper.FrameProcessor
@@ -32,6 +33,9 @@ import kotlin.collections.ArrayList
 
 class CameraFragment : Fragment(), View.OnClickListener,
     ActivityCompat.OnRequestPermissionsResultCallback {
+
+    private val application = MyApplication.instance
+    private val mecHelper = application?.mecHelper
 
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
@@ -53,7 +57,9 @@ class CameraFragment : Fragment(), View.OnClickListener,
                 val jpegByteArray =
                     FrameProcessor.getJpegByteArray(textureView, 0.5, 60)
 
-                // TODO: send to the server
+                // Send frame to the server
+                if (mecHelper != null && mecHelper.streamingInitialized)
+                    mecHelper.sendUdpChunk(jpegByteArray)
 
                 // FrameProcessor.saveJpegByteArray(jpegByteArray, file)
                 // Log.i(TAG, "Frame saved: $file")

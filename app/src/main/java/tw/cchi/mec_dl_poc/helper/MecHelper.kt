@@ -93,7 +93,33 @@ class MecHelper {
     }
 
     fun sendUdpString(message: String) {
-        udpSocketHelper.sendMessage(Constants.MEC_SERVER_IP, remoteUdpPort, message)
+        udpSocketHelper.sendPacket(Constants.MEC_SERVER_IP, remoteUdpPort, message)
+    }
+
+    fun sendUdpChunk(byteArray: ByteArray): Boolean {
+        if (!streamingInitialized) {
+            Log.e(TAG, "sendUdpChunk: streaming not initialized")
+            return false
+        }
+
+        val chunk = PacketProcessor.fragmentPacket(byteArray)
+        if (chunk.size > Constants.CHUNK_MAX_PACK) {
+            Log.e(TAG, "Chunk pack size %d should not greater than CHUNK_MAX_PACK: %d"
+                            .format(chunk.size, Constants.CHUNK_MAX_PACK))
+            return false
+        }
+
+        // Send the first packet for specifying total data length
+        val dataLengthBytes = PacketProcessor.getDataLengthIn4Bytes(chunk.size)
+        udpSocketHelper.sendPacket(Constants.MEC_SERVER_IP, remoteUdpPort, dataLengthBytes, 4)
+
+        // Send the remaining packets which contains data
+        for (fragment in chunk) {
+            udpSocketHelper.sendPacket(
+                Constants.MEC_SERVER_IP, remoteUdpPort, fragment, Constants.CHUNK_PACK_SIZE)
+        }
+
+        return true
     }
 
     class PacketRecvHandler(private val outerClass: WeakReference<MecHelper>) : Handler() {
