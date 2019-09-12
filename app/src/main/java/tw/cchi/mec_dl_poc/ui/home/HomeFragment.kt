@@ -9,6 +9,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import tw.cchi.mec_dl_poc.MyApplication
 import tw.cchi.mec_dl_poc.R
 import tw.cchi.mec_dl_poc.config.MecConnStatus
@@ -86,7 +89,9 @@ class HomeFragment : Fragment() {
 
         btnTest.setOnClickListener {
             if (mecHelper != null && mecHelper.streamingInitialized) {
-                mecHelper.sendUdpString("Test Hello Worrrrrld")
+                CoroutineScope(Dispatchers.IO).launch {
+                    mecHelper.sendUdpString("Runway 13 cleared for takeoff!")
+                }
             }
         }
     }
