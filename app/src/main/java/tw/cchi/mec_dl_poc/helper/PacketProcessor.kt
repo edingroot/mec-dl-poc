@@ -1,5 +1,6 @@
 package tw.cchi.mec_dl_poc.helper
 
+import tw.cchi.mec_dl_poc.config.Constants
 import tw.cchi.mec_dl_poc.util.and
 import tw.cchi.mec_dl_poc.util.shl
 
@@ -7,11 +8,25 @@ class PacketProcessor {
 
     companion object {
         fun fragmentPacket(byteArray: ByteArray): Array<ByteArray> {
-            TODO()
+            // val packCount = ceil(byteArray.size.toDouble() / Constants.CHUNK_PACK_SIZE).toInt()
+            // var chunk = Array(packCount) { ByteArray(Constants.CHUNK_PACK_SIZE) }
+            return byteArray.groupBy { it / Constants.CHUNK_PACK_SIZE }
+                             .map { it.value.toByteArray() }.toTypedArray()
         }
 
-        fun assemblePacket(packetArray: Array<ByteArray>): ByteArray {
-            TODO()
+        fun assemblePacket(dataLength: Int, packetArray: Array<ByteArray>): ByteArray? {
+            if (packetArray.size * Constants.CHUNK_PACK_SIZE < dataLength)
+                return null
+
+            var byteArray = ByteArray(dataLength)
+            for (i in 0 until packetArray.size - 2)
+                byteArray += packetArray[i]
+
+            val remainingPackets = dataLength - (packetArray.size - 1) * Constants.CHUNK_PACK_SIZE
+            for (i in 0 until remainingPackets - 1)
+                byteArray += packetArray[packetArray.size - 1][i]
+
+            return byteArray
         }
 
         fun getDataLengthIn4Bytes(length: Int): ByteArray {
