@@ -15,10 +15,13 @@ import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,9 +40,13 @@ import kotlin.collections.ArrayList
 
 class CameraFragment : Fragment(), View.OnClickListener,
     ActivityCompat.OnRequestPermissionsResultCallback {
-
     private val application = MyApplication.instance
     private val mecHelper = application?.mecHelper
+
+    private lateinit var cameraViewModel: CameraViewModel
+
+    private lateinit var txtFrameResult: TextView
+    private lateinit var textureView: AutoFitTextureView // for camera preview
 
     private var fpsCounter = 0
     private var fpsCounterTimestamp = System.currentTimeMillis()
@@ -89,11 +96,6 @@ class CameraFragment : Fragment(), View.OnClickListener,
      * ID of the current [CameraDevice].
      */
     private lateinit var cameraId: String
-
-    /**
-     * An [AutoFitTextureView] for camera preview.
-     */
-    private lateinit var textureView: AutoFitTextureView
 
     /**
      * A [CameraCaptureSession] for camera preview.
@@ -264,16 +266,32 @@ class CameraFragment : Fragment(), View.OnClickListener,
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_camera, container, false)
+    ): View? {
+        val root = inflater.inflate(R.layout.fragment_camera, container, false)
+
+        cameraViewModel =
+            ViewModelProviders.of(this).get(CameraViewModel::class.java)
+
+        return root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         view.findViewById<View>(R.id.picture).setOnClickListener(this)
         view.findViewById<View>(R.id.info).setOnClickListener(this)
+
         textureView = view.findViewById(R.id.texture)
+        txtFrameResult = view.findViewById(R.id.txtFrameResult)
+
+        initViewModelSubscription()
 
         if (mecHelper == null || !mecHelper.streamingInitialized) {
             Toast.makeText(context, "UDP streaming not initialized", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun initViewModelSubscription() {
+        cameraViewModel.initialize()
+        cameraViewModel.frameResult.observe(this, Observer { txtFrameResult.text = it })
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

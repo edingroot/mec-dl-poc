@@ -13,6 +13,7 @@ import tw.cchi.mec_dl_poc.config.MecConnStatus
 import java.util.*
 
 class HomeViewModel : ViewModel() {
+    private val TAG = Constants.TAG + "/HomeViewModel"
     private val application = MyApplication.instance
     private val mecHelper = application?.mecHelper
 
@@ -40,7 +41,7 @@ class HomeViewModel : ViewModel() {
         }
     }
     private val frameResultObserver = Observer { _, arg ->
-        Log.i(Constants.TAG, "response from observer=%s".format(arg as String))
+        Log.i(TAG, "response from observer=%s".format(arg as String))
     }
 
     fun initialize() {
