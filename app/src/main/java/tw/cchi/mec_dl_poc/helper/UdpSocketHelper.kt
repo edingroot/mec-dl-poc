@@ -11,8 +11,7 @@ class UdpSocketHelper(private val handler: Handler) {
     }
 
     // private var mThreadPool: ExecutorService? = null
-    private var sendSocket: DatagramSocket? = null
-    private var recvSocket: DatagramSocket? = null
+    private var socket: DatagramSocket? = null
     private var receivePacket: DatagramPacket? = null
     private val receiveByte = ByteArray(BUFFER_LENGTH)
 
@@ -24,13 +23,10 @@ class UdpSocketHelper(private val handler: Handler) {
         // mThreadPool = Executors.newFixedThreadPool(cpuNumbers * 5)
     }
 
-    fun initUdpSockets(portRecv: Int): Boolean {
+    fun initUdpSockets(port: Int): Boolean {
         try {
-            if (sendSocket == null)
-                sendSocket = DatagramSocket()
-
-            if (recvSocket == null)
-                recvSocket = DatagramSocket(portRecv)
+            if (socket == null)
+                socket = DatagramSocket(port)
 
             if (receivePacket == null)
                 receivePacket = DatagramPacket(receiveByte, BUFFER_LENGTH)
@@ -60,14 +56,9 @@ class UdpSocketHelper(private val handler: Handler) {
         receivePacket = null
         clientThread.interrupt()
 
-        if (sendSocket != null) {
-            sendSocket?.close()
-            sendSocket = null
-        }
-
-        if (recvSocket != null) {
-            recvSocket?.close()
-            recvSocket = null
+        if (socket != null) {
+            socket?.close()
+            socket = null
         }
     }
 
@@ -79,24 +70,30 @@ class UdpSocketHelper(private val handler: Handler) {
         return sendPacket(remoteHost, remotePort, bytes, 0, length)
     }
 
-    fun sendPacket(remoteHost: String, remotePort: Int, bytes: ByteArray, offset: Int, length: Int): Boolean {
-        if (sendSocket == null) return false
+    fun sendPacket(
+        remoteHost: String,
+        remotePort: Int,
+        bytes: ByteArray,
+        offset: Int,
+        length: Int
+    ): Boolean {
+        if (socket == null) return false
 
         // mThreadPool?.execute {
-            try {
-                val packet = DatagramPacket(
-                    bytes,
-                    offset,
-                    length,
-                    InetAddress.getByName(remoteHost),
-                    remotePort
-                )
-                sendSocket?.send(packet)
-            } catch (e: UnknownHostException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+        try {
+            val packet = DatagramPacket(
+                bytes,
+                offset,
+                length,
+                InetAddress.getByName(remoteHost),
+                remotePort
+            )
+            socket?.send(packet)
+        } catch (e: UnknownHostException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
         // }
 
         return true
@@ -105,23 +102,23 @@ class UdpSocketHelper(private val handler: Handler) {
     private fun receiveMessage() {
         while (isThreadRunning) {
             try {
-                recvSocket?.receive(receivePacket)
+                socket?.receive(receivePacket)
 
                 if (receivePacket == null || receivePacket?.length == 0)
                     continue
 
                 // Multi thread to handle multi packets
                 // mThreadPool?.execute {
-                    val strReceive =
-                        String(receivePacket!!.data, receivePacket!!.offset, receivePacket!!.length)
+                val strReceive =
+                    String(receivePacket!!.data, receivePacket!!.offset, receivePacket!!.length)
 
-                    /* Log.d(
-                        TAG,
-                        strReceive + " from " + receivePacket!!.address.hostAddress + ":" + receivePacket!!.port
-                    ) */
+                /* Log.d(
+                    TAG,
+                    strReceive + " from " + receivePacket!!.address.hostAddress + ":" + receivePacket!!.port
+                ) */
 
-                    handler.sendMessage(handler.obtainMessage(1, strReceive))
-                    receivePacket?.length = BUFFER_LENGTH
+                handler.sendMessage(handler.obtainMessage(1, strReceive))
+                receivePacket?.length = BUFFER_LENGTH
                 // }
             } catch (e: IOException) {
                 terminateUdpSockets()
